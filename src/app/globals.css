@@ -1,0 +1,39 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* ---------------------------------------------------------------
+   PALETA — cambiá cualquiera de estos hex y se actualiza en toda la
+   app (son las únicas líneas que definen los colores; todo lo demás
+   usa clases de Tailwind como bg-paper, text-ink, border-line, etc.)
+
+   --color-ink       texto principal (gris muy oscuro azulado)
+   --color-paper     fondo de página — el "gris" de acá abajo
+   --color-teal      color de acento / botones principales
+   --color-teal-dark hover de los botones teal
+   --color-highlight detalles secundarios (badges, etc.)
+   --color-line      bordes y separadores finitos
+   --color-muted     texto secundario (gris)
+   --color-danger    errores y acciones destructivas
+
+   Para seguir probando tonos de gris de fondo: cambiá --color-paper.
+   Achicar el # (ej. f0efe9 -> e8e6df) lo oscurece más; agrandarlo
+   (-> f5f4f0) lo aclara. Guardá y refrescá para ver el resultado.
+   --------------------------------------------------------------- */
+@theme inline {
+  --color-ink: #1b2333;
+  --color-paper: #efeee7;
+  --color-teal: #0f8b6c;
+  --color-teal-dark: #0b6e56;
+  --color-highlight: #f2b84b;
+  --color-line: #dedcd3;
+  --color-muted: #6b7280;
+  --color-danger: #c4453a;
+
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+}
