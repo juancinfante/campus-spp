@@ -20,11 +20,18 @@ export default async function DocumentacionPage() {
     .order('uploaded_at', { ascending: false });
 
   const documentsWithUrls = await Promise.all(
-    (documents ?? []).map(async (d) => {
+    (documents ?? []).map(async (d: any) => {
+      // SOLUCIÓN: Extraer profiles
+      const profileData: any = Array.isArray(d.profiles) ? d.profiles[0] : d.profiles;
       const { data } = await supabase.storage
         .from('general-documents')
         .createSignedUrl(d.file_path, 60 * 10);
-      return { ...d, signedUrl: data?.signedUrl ?? null };
+        
+      return { 
+        ...d, 
+        profiles: profileData, 
+        signedUrl: data?.signedUrl ?? null 
+      };
     })
   );
 

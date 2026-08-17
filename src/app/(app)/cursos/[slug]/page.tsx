@@ -23,6 +23,9 @@ export default async function ClaseDetallePage({
 
   if (!course) notFound();
 
+  // SOLUCIÓN: Extraer profiles
+  const profileData: any = Array.isArray(course.profiles) ? course.profiles[0] : course.profiles;
+
   const isOwner = course.teacher_id === user.id;
 
   let isEnrolled = false;
@@ -52,8 +55,6 @@ export default async function ClaseDetallePage({
     examCount = ec ?? 0;
   }
 
-  // La galería es visible aunque no estés inscripto (mismo nivel que
-  // la descripción) — bucket público, no hace falta URL firmada.
   const { data: media } = await supabase
     .from('course_media')
     .select('id, kind, file_name, file_path')
@@ -72,7 +73,7 @@ export default async function ClaseDetallePage({
           <div>
             <h1 className="font-display text-2xl font-semibold text-ink">{course.title}</h1>
             <p className="mt-1 text-sm text-muted">
-              Profesor: {course.profiles?.full_name ?? '—'}
+              Profesor: {profileData?.full_name ?? '—'}
             </p>
           </div>
           {isOwner ? (
