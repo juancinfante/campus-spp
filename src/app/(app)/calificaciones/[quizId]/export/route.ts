@@ -2,14 +2,13 @@ import ExcelJS from 'exceljs';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-// Excel con TODAS las notas del examen (sin paginar — la paginación es
-// solo para la pantalla). Devuelve 404 si no sos el profesor dueño.
 export async function GET(_request: Request, { params }: { params: Promise<{ quizId: string }> }) {
   const { quizId } = await params;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  
   if (!user) return new NextResponse('No autorizado', { status: 401 });
 
   const { data: quiz } = await supabase
@@ -18,7 +17,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ qui
     .eq('id', quizId)
     .single();
 
-  if (!quiz || quiz.courses?.teacher_id !== user.id) {
+  // 1. SOLUCIÓN PARA COURSES: Extraemos el objeto de forma segura
+  const courseData: any = Array.isArray(quiz?.courses) ? quiz.courses[0] : quiz?.courses;
+
+  // Usamos courseData en lugar de quiz.courses
+  if (!quiz || courseData?.teacher_id !== user.id) {
     return new NextResponse('No encontrado', { status: 404 });
   }
 
@@ -39,8 +42,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ qui
   sheet.getRow(1).font = { bold: true };
 
   for (const a of attempts ?? []) {
+    // 2. SOLUCIÓN PARA PROFILES: Extraemos el objeto de forma segura
+    const profileData: any = Array.isArray(a.profiles) ? a.profiles[0] : a.profiles;
+
     sheet.addRow({
-      name: a.profiles?.full_name ?? '—',
+      name: profileData?.full_name ?? '—',
       score: a.score ?? '',
       date: new Date(a.submitted_at).toLocaleString('es-AR'),
     });
@@ -49,7 +55,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ qui
   const buffer = await workbook.xlsx.writeBuffer();
   const safeTitle = quiz.title.replace(/[^a-zA-Z0-9-]+/g, '-').toLowerCase();
 
-  return new NextResponse(buffer as Buffer, {
+  return new NextResponse(buffer as ArrayBuffer, {
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition': `attachment; filename="calificaciones-${safeTitle}.xlsx"`,

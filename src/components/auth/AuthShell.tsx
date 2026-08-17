@@ -22,7 +22,7 @@ export function AuthShell({
           className="absolute inset-0 h-full w-full object-cover"
         />
         {/* Scrim para que el texto siga siendo legible arriba de la imagen. */}
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/30 to-ink/60" />
+        <div className="absolute inset-0 bg-linear-to-t from-ink/85 via-ink/30 to-ink/60" />
 
         <div className="relative flex h-full flex-col justify-between px-12 py-14 text-paper">
           <span className="font-display text-2xl font-semibold tracking-tight">{BRAND_NAME}</span>

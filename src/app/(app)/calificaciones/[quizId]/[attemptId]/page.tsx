@@ -26,7 +26,10 @@ export default async function VerRespuestasPage({
     .eq('id', quizId)
     .single();
 
-  if (!quiz || quiz.courses?.teacher_id !== user.id) notFound();
+  // 1. SOLUCIÓN PARA COURSES
+  const courseData: any = Array.isArray(quiz?.courses) ? quiz.courses[0] : quiz?.courses;
+
+  if (!quiz || courseData?.teacher_id !== user.id) notFound();
 
   const { data: attempt } = await supabase
     .from('quiz_attempts')
@@ -36,6 +39,9 @@ export default async function VerRespuestasPage({
     .single();
 
   if (!attempt) notFound();
+
+  // 2. SOLUCIÓN PARA PROFILES
+  const profileData: any = Array.isArray(attempt.profiles) ? attempt.profiles[0] : attempt.profiles;
 
   // get_quiz_with_answers trae is_correct (columna bloqueada para
   // SELECT directo) — la usamos acá para marcar la opción correcta,
@@ -77,7 +83,8 @@ export default async function VerRespuestasPage({
           ← {quiz.title}
         </Link>
         <h1 className="mt-1 font-display text-2xl font-semibold text-ink">
-          {attempt.profiles?.full_name}
+          {/* USAMOS profileData AQUÍ */}
+          {profileData?.full_name ?? 'Alumno Desconocido'}
         </h1>
         <p className="text-sm text-muted">
           {attempt.score ?? '—'}% ·{' '}
