@@ -40,7 +40,10 @@ export default async function EditarExamenPage({
     .eq('id', quizId)
     .single();
 
-  if (!quiz || quiz.courses?.teacher_id !== user.id) notFound();
+  // SOLUCIÓN: Extraemos courses en caso de que venga como arreglo
+  const courseData: any = Array.isArray(quiz?.courses) ? quiz?.courses[0] : quiz?.courses;
+
+  if (!quiz || courseData?.teacher_id !== user.id) notFound();
 
   // get_quiz_with_answers es la única forma de leer is_correct desde el
   // cliente (la columna está revocada para SELECT directo). La función
