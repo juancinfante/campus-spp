@@ -15,13 +15,19 @@ type NewsPost = {
 
 export default async function HomePage() {
   const { supabase, user, profile } = await getViewer();
-  if (!user || !profile) return null; // el layout ya maneja estos casos
+  if (!user || !profile) return null;
 
-  const { data: news } = await supabase
+  const { data: rawNews } = await supabase
     .from('news_posts')
     .select('id, title, content, created_at, profiles(full_name)')
     .order('created_at', { ascending: false })
     .limit(10);
+
+  // SOLUCIÓN 1: Mapeamos los datos para asegurar que profiles sea un objeto y coincida con el type NewsPost
+  const news: NewsPost[] = (rawNews ?? []).map((n: any) => ({
+    ...n,
+    profiles: Array.isArray(n.profiles) ? n.profiles[0] : n.profiles,
+  }));
 
   const isAdmin = profile.role === 'admin';
   const isTeacher = profile.role === 'teacher';
@@ -33,7 +39,7 @@ export default async function HomePage() {
         <p className="mt-1 text-muted">Novedades del campus.</p>
       </div>
 
-      <NewsSection news={news ?? []} isAdmin={isAdmin} />
+      <NewsSection news={news} isAdmin={isAdmin} />
 
       {isTeacher ? (
         <TeacherCourses teacherId={user.id} />
@@ -138,9 +144,10 @@ async function StudentCourses({ studentId }: { studentId: string }) {
     .select('course:courses(id, title, slug)')
     .eq('student_id', studentId);
 
-  const courses = (enrollments ?? [])
-    .map((e) => e.course)
-    .filter((c): c is NonNullable<typeof c> => Boolean(c));
+  // SOLUCIÓN 2: Extraemos el curso en caso de que supabase lo devuelva como arreglo
+  const courses: any[] = (enrollments ?? [])
+    .map((e) => (Array.isArray(e.course) ? e.course[0] : e.course))
+    .filter(Boolean);
 
   return (
     <section className="space-y-4">

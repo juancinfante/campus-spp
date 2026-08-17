@@ -25,7 +25,10 @@ export default async function CalificacionesExamenPage({
     .eq('id', quizId)
     .single();
 
-  if (!quiz || quiz.courses?.teacher_id !== user.id) notFound();
+  // SOLUCIÓN 1: Extraemos el curso
+  const courseData: any = Array.isArray(quiz?.courses) ? quiz.courses[0] : quiz?.courses;
+
+  if (!quiz || courseData?.teacher_id !== user.id) notFound();
 
   let query = supabase
     .from('quiz_attempts')
@@ -58,7 +61,7 @@ export default async function CalificacionesExamenPage({
             ← Todos los exámenes
           </Link>
           <h1 className="mt-1 font-display text-2xl font-semibold text-ink">{quiz.title}</h1>
-          <p className="text-sm text-muted">{quiz.courses?.title}</p>
+          <p className="text-sm text-muted">{courseData?.title}</p>
         </div>
         <a
           href={`/calificaciones/${quizId}/export`}
@@ -108,23 +111,28 @@ export default async function CalificacionesExamenPage({
               </tr>
             </thead>
             <tbody>
-              {attempts.map((a) => (
-                <tr key={a.id} className="border-b border-line last:border-0">
-                  <td className="px-4 py-2.5 text-ink">{a.profiles?.full_name}</td>
-                  <td className="px-4 py-2.5 text-ink">{a.score ?? '—'}%</td>
-                  <td className="px-4 py-2.5 text-muted">
-                    {new Date(a.submitted_at).toLocaleDateString('es-AR')}
-                  </td>
-                  <td className="px-4 py-2.5 text-right">
-                    <Link
-                      href={`/calificaciones/${quizId}/${a.id}`}
-                      className="text-sm font-medium text-teal hover:underline"
-                    >
-                      Ver respuestas
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {attempts.map((a) => {
+                // SOLUCIÓN 2: Extraemos el profile para cada fila de la tabla
+                const profileData: any = Array.isArray(a.profiles) ? a.profiles[0] : a.profiles;
+
+                return (
+                  <tr key={a.id} className="border-b border-line last:border-0">
+                    <td className="px-4 py-2.5 text-ink">{profileData?.full_name}</td>
+                    <td className="px-4 py-2.5 text-ink">{a.score ?? '—'}%</td>
+                    <td className="px-4 py-2.5 text-muted">
+                      {new Date(a.submitted_at).toLocaleDateString('es-AR')}
+                    </td>
+                    <td className="px-4 py-2.5 text-right">
+                      <Link
+                        href={`/calificaciones/${quizId}/${a.id}`}
+                        className="text-sm font-medium text-teal hover:underline"
+                      >
+                        Ver respuestas
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
